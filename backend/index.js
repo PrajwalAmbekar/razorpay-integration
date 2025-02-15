@@ -18,13 +18,26 @@ app.get('/',(req,res)=>{
 });
 
 //creating order
-app.post("/order",(req,res)=>{
+app.post("/order",async (req,res)=>{
     try{
         //creating the instance of razorpay payment
         const razorpay=new Razorpay({
             key_id:process.env.RAZORPAY_KEY_ID,
             key_secret:process.env.RAZORPAY_KEY_SECRET
         });
+
+        if(!req.body){
+            return res.status(400).send("bad request");
+        }
+        const options=req.body;
+
+        const order=await razorpay.orders.create(options);
+
+
+        if(!order){
+            return res.status(400).send("bad request");
+        }
+        res.json(order);
 
     }catch(err){
         console.log(err);
