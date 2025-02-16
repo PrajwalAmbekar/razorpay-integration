@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from 'react';
-import QRCode from "qrcode.react";
-import QrScanner from "react-qr-scanner";
+import { QRCode } from "react-qrcode-logo";
+import { Scanner } from "@yudiel/react-qr-scanner";
 import axios from "axios";
 
 
@@ -10,22 +10,22 @@ const App = () => {
   const [amount,setAmount]=useState('');
   const [qrValue,setQrValue]=useState("");
   const [scannedData,setScannedData]=useState(null);
+  const [showScanner,setShowScanner]=useState(false);
   
 
   const generateQRCode=async ()=>{
     if(!amount){
       return alert("Enter amount");
     }
-    const {data}=await axios.post("http:/localhost:5000/create-order",{amount:100});
-    setQrValue(JSON.stringify({
-      id:data.id,
-      amount:amount,
-      currency:"INR",
-    }));
+    const {data}=await axios.post("http://localhost:8000/create-order",{amount:amount});
+    const upiLink=`upi://pay?pa=yourupi@upi&pn=YourName&tr=${data.id}&tn=QR Payment&am=${amount}&cu=INR`;
+    setQrValue(upiLink);
+
+
   };
 
   const handleScan=async (data)=>{
-    const paymentData=JSON.parse(data.text);
+    const paymentData=JSON.parse(data);
     setScannedData(paymentData);
     await processPayment(paymentData);
 
@@ -73,7 +73,12 @@ const App = () => {
       }
 
       <h3>Scan QR Code</h3>
-      <QrScanner delay={300} onError={handleError} onScan={handleScan} style={{width:"100%"}}/>
+      <button onClick={()=>setShowScanner(!showScanner)}>
+        {showScanner ? "Hide Scanner":'Scan QR Code'}
+      </button>
+     {showScanner && ( <Scanner delay={300} onError={handleError} onResult={handleScan} style={{width:"100%"}}/>)};
+     
+
       {scannedData && (
         <div>
           <h3>Payment Details</h3>
