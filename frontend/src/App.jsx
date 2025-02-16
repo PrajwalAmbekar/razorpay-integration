@@ -1,35 +1,81 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react'
+import { useState } from 'react';
+import QRCode from "qrcode.react";
+import QRScanner from "react-qr-scanner";
+import axios from "axios";
 
-function App() {
-  const [count, setCount] = useState(0)
 
+
+const App = () => {
+  const [amount,setAmount]=useState('');
+  const [qrValue,setQrValue]=useState("");
+  const [scannedData,setScannedData]=useState(null);
+  
+
+  const generateQRCode=async ()=>{
+    if(!amount){
+      return alert("Enter amount");
+    }
+    const {data}=await axios.post("http:/localhost:5000/create-order",{amount});
+    setQrValue(JSON.stringify({
+      id:data.id,
+      amount:amount,
+      currency:"INR",
+    }));
+  };
+
+  const handleScan=async (data)=>{
+    const paymentData=JSON.parse(data.text);
+    setScannedData(paymentData);
+    await processPayment(paymentData);
+
+  }
+
+  const handleError=(err)=>{
+    console.log(err);
+
+  }
+  const processPayment=async (paymentData)=>{
+    const options={
+      key:rzp_test_3MdHSwOd1ystAO,
+      amount:paymentData.amount*100,
+      currency:"INR",
+      name:"QR Payment System",
+      description:"UPI Payment",
+      order_id:paymentData.id,
+      handler:function (response){
+        alert(`Payment successful! Payment ID: ${response.raorpay_payment_id}`);
+
+      },
+      prefill:{
+        email:"user@example.com",
+        contact:"9345945234"
+      },
+      theme:{
+        color:"#3399cc",
+        method:{
+          upi:true
+        },
+      },
+  
+    };
+    const razor=new window.Rayzorpay(options);
+    razor.open();
+  }
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div>
+      <h2>QR Code Payment</h2>
+      <input type="number" placeholder="Enter Amount" value={amount} onChange={(e)=> setAmount(e.target.value)} />
+      <button onClick={generateQRCode}>Generate QR</button>
+      {
+        qrValue &&
+        <QRCode value={qrValue} size={256}/>
+      }
+
+      <h3>Scan QR Code</h3>
+      
+    </div>
   )
 }
 
-export default App
+export default App;
