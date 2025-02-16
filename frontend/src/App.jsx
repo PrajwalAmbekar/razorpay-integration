@@ -16,7 +16,7 @@ const App = () => {
     if(!amount){
       return alert("Enter amount");
     }
-    const {data}=await axios.post("http:/localhost:5000/create-order",{amount});
+    const {data}=await axios.post("http:/localhost:5000/create-order",{amount:100});
     setQrValue(JSON.stringify({
       id:data.id,
       amount:amount,
