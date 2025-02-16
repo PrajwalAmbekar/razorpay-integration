@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from 'react';
 import QRCode from "qrcode.react";
-import QRScanner from "react-qr-scanner";
+import QrScanner from "react-qr-scanner";
 import axios from "axios";
 
 
@@ -73,7 +73,15 @@ const App = () => {
       }
 
       <h3>Scan QR Code</h3>
-      
+      <QrScanner delay={300} onError={handleError} onScan={handleScan} style={{width:"100%"}}/>
+      {scannedData && (
+        <div>
+          <h3>Payment Details</h3>
+          <p>Order ID:{scannedData.id}</p>
+          <p>Amount:{scannedData.amount}</p>
+        </div>
+      )}
+
     </div>
   )
 }
