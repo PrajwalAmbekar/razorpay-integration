@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import Razorpay from "razorpay";
-import Paymen from "./models/payment.js";
+import Payment from "./models/payment.js";
 
 dotenv.config();
 
@@ -16,7 +16,7 @@ app.get('/',(req,res)=>{
     res.send("hello")
 })
 
-// mongoose.connect(process.env.MONGODB_URI).then(()=>console.log("the mongodb is connected")).catch(err=>console.log(err));
+ mongoose.connect(process.env.MONGODB_URI).then(()=>console.log("the mongodb is connected")).catch(err=>console.log(err));
 
 const razorpay =new Razorpay({
     key_id:process.env.RAZORPAY_KEY_ID,
@@ -34,12 +34,12 @@ app.post("/create-order",async (req,res)=>{
         const order =await razorpay.orders.create(options);
 
 
-        const newPayment =new PaymentAddress({ order_id:order_id,amount:req.body.amount});
+        const newPayment =new Payment({ order_id:order.id,amount:req.body.amount});
         await newPayment.save();
         res.json(order);
 
     }catch(error){
-        res.status(400).json({error:error.message});
+        res.status(500).json({error:error.message});
     }
 })
 
